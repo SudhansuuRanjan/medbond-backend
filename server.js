@@ -1,8 +1,12 @@
 const PORT = process.env.PORT || 3000
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const cors = require('cors');
 const ejs = require("ejs")
+const { Schema } = mongoose;
+
 require('dotenv').config();
 
 const app = express();
@@ -10,77 +14,35 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
+app.use(cors());
 
 const uri = process.env.URI ;
 
 mongoose.connect(uri);
 
-const videoSchema = {
+const videoSchema = Schema({
     videoLink:String,
     videoTopic:String,
     videoAuthor:String
-}
+})
 
-const Video = mongoose.model("Video", videoSchema)
-
-const linkSchema = {
+const linkSchema = Schema({
+    _id: Schema.Types.ObjectId,
     subtopic:String,
     link:String,
-    videos:[videoSchema]
-}
+    videos:[{ type: Schema.Types.ObjectId, ref: 'Video' }]
+})
 
-const Link = mongoose.model("Link", linkSchema)
-
-const subjectSchema ={
+const subjectSchema = Schema({
+   _id: Schema.Types.ObjectId,
    subject:String,
-   links:[linkSchema]
-}
+   links:[{ type: Schema.Types.ObjectId, ref: 'Link' }]
+})
 
+const Video = mongoose.model("Video", videoSchema)
+const Link = mongoose.model("Link", linkSchema)
 const Subject = mongoose.model("Subject", subjectSchema)
 
-
-
-
-const defaultVideo11 = new Video({
-    videoLink:"https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/",
-    videoTopic:"DSA",
-    videoAuthor:"freeCodeCamp"
-})
-
-const defaultVideo12 = new Video({
-    videoLink:"https://www.freecodecamp.org/learn/responsive-web-design/",
-    videoTopic:"Web Design",
-    videoAuthor:"freeCodeCamp"
-})
-
-const defaultVideo21 = new Video({
-    videoLink:"https://www.freecodecamp.org/learn/libraries/",
-    videoTopic:"libraries",
-    videoAuthor:"freeCodeCamp"
-})
-
-const defaultVideo22 = new Video({
-    videoLink:"https://www.freecodecamp.org/learn/modules/",
-    videoTopic:"Web Design",
-    videoAuthor:"freeCodeCamp"
-})
-
-const defaultVideo2 = [defaultVideo21 , defaultVideo22]
-const defaultVideo1 = [defaultVideo11 , defaultVideo12]
-
-const link1 = new Link({
-  name: "Freecodecamp",
-  link:"https://www.freecodecamp.com/",
-  videos: [defaultVideo1]
-});
-
-const link2 = new Link({
-   name: "Youtube",
-   link:"https://www.youtube.com/",
-   videos: [defaultVideo2]
-});
-
-const defaultLinks = [link1 , link2];
 
 app.get('/',(req,res)=>{
 
